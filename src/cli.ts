@@ -1,7 +1,10 @@
-import Anthropic from "@anthropic-ai/sdk";
-import { readFile } from "node:fs/promises";
+import { AnthropicLlmClient } from "./agent/llmClient.ts";
 
-// 1. Récupérer le chemin du diff passé en argument
+import { readFile } from "node:fs/promises";
+import { submitVerdictTool } from "./tools/submitVerdict.ts";
+import { validateVerdict } from "./agent/verdict.ts";
+
+
 const diffPath = process.argv[2];
 
 if (!diffPath) {
@@ -9,10 +12,8 @@ if (!diffPath) {
   process.exit(1);
 }
 
-// 2. Lire le fichier
 const diff = await readFile(diffPath, "utf8");
 
-// 3. Construire le message : consigne + diff entre balises
 const prompt = `Tu relis une pull request. Voici son diff, entre les balises <diff>.
 Dis si ce changement introduit un problème, lequel, et dans quel fichier.
 
@@ -20,20 +21,32 @@ Dis si ce changement introduit un problème, lequel, et dans quel fichier.
 ${diff}
 </diff>`;
 
-// 4. Envoyer au modèle
-const client = new Anthropic(); // lit ANTHROPIC_API_KEY dans l'environnement
+const llm = new AnthropicLlmClient("claude-haiku-5-5");
 
-const message = await client.messages.create({
-  model: "claude-haiku-5-5",
-  max_tokens: 1024,
-  messages: [{ role: "user", content: prompt }],
+const reply = await llm.send({
+  prompt,
+  maxTokens: 1024,
+  tools: [submitVerdictTool],
+  toolChoice: "submit_verdict",
 });
 
-// 5. Afficher seulement le texte de la réponse, puis la consommation
-for (const block of message.content) {
-  if (block.type === "text") {
-    console.log(block.text);
+const call = reply.toolCalls.find(c => c.name === "submit_verdict");
+
+if (!call) {
+  console.error("Le modèle n'a pas rendu de verdict.");
+  process.exitCode = 2;
+} else {
+  const result = validateVerdict(call.input);
+
+  if (!result.ok) {
+    console.error(`Verdict rejeté : ${result.error}`);
+    process.exitCode = 2;
+  } else {
+    console.log(`Verdict : ${result.value.verdict}`);
+    console.log(`Raison  : ${result.value.reason}`);
+    process.exitCode = result.value.verdict === "APPROVE" ? 0 : 1;
   }
 }
 
-console.log(message.usage);
+console.log(`— usage : ${reply.inputTokens} tokens en entrée, ${reply.outputTokens} en sortie`);
+
