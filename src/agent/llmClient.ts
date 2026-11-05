@@ -14,11 +14,10 @@ export type LlmRequest = {
   toolChoice?: string;
 };
 
-// Ce que ton code reçoit, dans TA forme, indépendante du SDK
 export type LlmResponse = {
-  stopReason: string | null; // "end_turn", "max_tokens", "tool_use"…
-  text: string;              // le texte de tous les blocs "text", assemblé
-  toolCalls: ToolCall[];     // vide tant qu'il n'y a pas d'outils
+  stopReason: string | null;
+  text: string; 
+  toolCalls: ToolCall[];  
   inputTokens: number;
   outputTokens: number;
 };

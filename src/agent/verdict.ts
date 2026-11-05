@@ -1,7 +1,6 @@
 export type VerdictValue = "APPROVE" | "REQUEST_CHANGES";
 export type Verdict = { verdict: VerdictValue; reason: string };
 
-// Soit un verdict valide, soit une erreur expliquée
 export type VerdictResult =
   | { ok: true; value: Verdict }
   | { ok: false; error: string };

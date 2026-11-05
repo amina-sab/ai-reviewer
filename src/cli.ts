@@ -1,5 +1,4 @@
 import { AnthropicLlmClient } from "./agent/llmClient.ts";
-
 import { readFile } from "node:fs/promises";
 import { submitVerdictTool } from "./tools/submitVerdict.ts";
 import { validateVerdict } from "./agent/verdict.ts";
