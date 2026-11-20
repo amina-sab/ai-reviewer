@@ -1,0 +1,15 @@
+diff --git a/ReviewService.cs b/ReviewService.cs
+index 8461e50..02fe507 100644
+--- a/ReviewService.cs
++++ b/ReviewService.cs
+@@ -11,8 +11,8 @@ public class ReviewService
+ 
+     public string FormatTitle(string title)
+     {
+-        var cleaned = title.Trim();
+-        return cleaned.ToUpperInvariant();
++        var trimmedTitle = title.Trim();
++        return trimmedTitle.ToUpperInvariant();
+     }
+ 
+     public string BuildQuery(int bookId)

@@ -1,0 +1,15 @@
+diff --git a/ReviewService.cs b/ReviewService.cs
+index 8461e50..0a185f8 100644
+--- a/ReviewService.cs
++++ b/ReviewService.cs
+@@ -2,10 +2,6 @@ public class ReviewService
+ {
+     public double GetAverageRating(List<int> ratings)
+     {
+-        if (ratings.Count == 0)
+-        {
+-            return 0;
+-        }
+         return ratings.Average();
+     }
+ 
