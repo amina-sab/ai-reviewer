@@ -1,0 +1,28 @@
+name: "AI Reviewer"
+description: "Fait relire une pull request par un agent IA, qui rend APPROVE ou REQUEST_CHANGES avec une raison."
+
+inputs:
+  anthropic-api-key:
+    description: "Clé API Anthropic (à passer via un secret du repo)"
+    required: true
+  model:
+    description: "Modèle Claude utilisé pour la revue"
+    required: false
+    default: "claude-haiku-5-5"
+  max-turns:
+    description: "Nombre maximal de tours de l'agent"
+    required: false
+    default: "10"
+  diff-path:
+    description: "Provisoire (étape 6) : chemin d'un fichier .diff à relire"
+    required: true
+
+outputs:
+  verdict:
+    description: "APPROVE ou REQUEST_CHANGES"
+  reason:
+    description: "La raison donnée par l'agent"
+
+runs:
+  using: "node24"
+  main: "dist/index.js"

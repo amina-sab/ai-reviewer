@@ -6,7 +6,8 @@
   "scripts": {
     "test": "vitest run",
     "review": "node --env-file=.env --import tsx src/cli.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "build": "esbuild src/main.ts --bundle --platform=node --target=node24 --format=esm --outfile=dist/index.js --banner:js=\"import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);\""
   },
   "repository": {
     "type": "git",
@@ -22,8 +23,13 @@
   "homepage": "https://github.com/amina-sab/ai-reviewer#readme",
   "devDependencies": {
     "@types/node": "^26.6.6",
+    "esbuild": "^0.28.2",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",
     "vitest": "^5.1.0"
+  },
+  "dependencies": {
+    "@actions/core": "^3.0.1",
+    "@anthropic-ai/sdk": "^1.12.0"
   }
 }
