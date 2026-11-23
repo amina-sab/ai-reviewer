@@ -2,7 +2,6 @@ import type { LlmClient, LlmMessage, ToolResult } from "./llmClient.ts";
 import { submitVerdictTool } from "../tools/submitVerdict.ts";
 import { readFileTool, executeReadFile } from "../tools/readFile.ts";
 import { validateVerdict, type Verdict } from "./verdict.ts";
-import{SYSTEM_PROMPT} from "../prompts/system.ts";
 
 export type ReviewOutcome =
   | { ok: true; verdict: Verdict }

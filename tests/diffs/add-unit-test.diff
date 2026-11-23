@@ -1,0 +1,38 @@
+diff --git a/tests/OrderServiceTests.cs b/tests/OrderServiceTests.cs
+new file mode 100644
+index 0000000..7b4ddab
+--- /dev/null
++++ b/tests/OrderServiceTests.cs
+@@ -0,0 +1,32 @@
++using Moq;
++using Shop.Core;
++using Xunit;
++
++namespace Shop.Tests;
++
++public class OrderServiceTests
++{
++    [Fact]
++    public void ComputeTotal_SumsUnitPriceTimesQuantity()
++    {
++        var service = new OrderService(Mock.Of<IOrderRepository>(), Mock.Of<INotifier>());
++        var order = new Order
++        {
++            Lines =
++            [
++                new OrderLine { UnitPrice = 10m, Quantity = 2 },
++                new OrderLine { UnitPrice = 5m, Quantity = 1 },
++            ],
++        };
++
++        Assert.Equal(25m, service.ComputeTotal(order));
++    }
++
++    [Fact]
++    public void ComputeTotal_ReturnsZero_WhenNoLines()
++    {
++        var service = new OrderService(Mock.Of<IOrderRepository>(), Mock.Of<INotifier>());
++
++        Assert.Equal(0m, service.ComputeTotal(new Order { Lines = [] }));
++    }
++}

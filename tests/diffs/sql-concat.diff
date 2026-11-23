@@ -1,0 +1,15 @@
+diff --git a/src/OrderRepository.cs b/src/OrderRepository.cs
+index ce28630..64a7bf5 100644
+--- a/src/OrderRepository.cs
++++ b/src/OrderRepository.cs
+@@ -19,4 +19,10 @@ public class OrderRepository
+             "SELECT * FROM Orders WHERE CustomerId = @customerId",
+             new { customerId });
+     }
++
++    public IEnumerable<Order> SearchByReference(string reference)
++    {
++        return _connection.Query<Order>(
++            $"SELECT * FROM Orders WHERE Reference LIKE '%{reference}%'");
++    }
+ }
