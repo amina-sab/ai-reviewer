@@ -1,0 +1,17 @@
+diff --git a/src/OrderService.cs b/src/OrderService.cs
+index 33d424e..8bf52a4 100644
+--- a/src/OrderService.cs
++++ b/src/OrderService.cs
+@@ -36,6 +36,12 @@ public class OrderService
+ 
+     public string FormatCustomerName(Customer customer)
+     {
++        ArgumentNullException.ThrowIfNull(customer);
++        if (string.IsNullOrWhiteSpace(customer.LastName))
++        {
++            return customer.FirstName;
++        }
++
+         return customer.FirstName + " " + customer.LastName.ToUpper();
+     }
+ }

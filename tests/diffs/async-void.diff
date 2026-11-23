@@ -1,0 +1,13 @@
+diff --git a/src/OrderService.cs b/src/OrderService.cs
+index 33d424e..a338085 100644
+--- a/src/OrderService.cs
++++ b/src/OrderService.cs
+@@ -26,7 +26,7 @@ public class OrderService
+         return total;
+     }
+ 
+-    public async Task ConfirmAsync(int orderId)
++    public async void ConfirmAsync(int orderId)
+     {
+         Order order = await _repository.GetAsync(orderId);
+         order.Status = OrderStatus.Confirmed;

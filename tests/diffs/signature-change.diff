@@ -1,0 +1,23 @@
+diff --git a/src/PricingService.cs b/src/PricingService.cs
+index 037616d..88cb214 100644
+--- a/src/PricingService.cs
++++ b/src/PricingService.cs
+@@ -1,15 +1,16 @@
+ namespace Shop.Core;
+ 
+ public class PricingService
+ {
+-    public decimal ApplyDiscount(decimal amount, decimal rate)
++    public decimal ApplyDiscount(decimal amount, decimal rate, decimal maxDiscount)
+     {
+-        return amount - amount * rate;
++        decimal discount = Math.Min(amount * rate, maxDiscount);
++        return amount - discount;
+     }
+ 
+     public decimal ComputeFinalPrice(Order order)
+     {
+         decimal subtotal = order.Lines.Sum(line => line.UnitPrice * line.Quantity);
+         return ApplyDiscount(subtotal, order.DiscountRate);
+     }
+ }

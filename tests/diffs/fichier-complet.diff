@@ -1,0 +1,136 @@
+diff --git a/src/BiblioNote.Core/Domain/Entities/Book.cs b/src/BiblioNote.Core/Domain/Entities/Book.cs
+new file mode 100644
+index 0000000..895ce9c
+--- /dev/null
++++ b/src/BiblioNote.Core/Domain/Entities/Book.cs
+@@ -0,0 +1,109 @@
++using BiblioNote.Core.Application.Exceptions;
++using BiblioNote.Core.Domain.Exceptions;
++using BiblioNote.Core.Domain.ObjectValues;
++
++namespace BiblioNote.Core.Domain.Entities;
++
++public class Book
++{
++    private readonly List<Review> _reviews;
++
++    private Book(string title, string author, Isbn isbn, PublicationYear publicationYear, CoverUri? coverUrl)
++    {
++        BookId = Guid.NewGuid();
++        Title = title;
++        Author = author;
++        Isbn = isbn;
++        PublicationYear = publicationYear;
++        CoverUrl = coverUrl;
++        _reviews = new List<Review>();
++    }
++
++    public Guid BookId { get; }
++    public string Title { get; private set; }
++    public string Author { get; private set; }
++    public Isbn Isbn { get; private set; }
++    public PublicationYear PublicationYear { get; private set; }
++    public CoverUri? CoverUrl { get; private set; }
++    public IReadOnlyList<Review> Reviews => _reviews;
++
++    // Valeurs dérivées : calculées à partir de la seule source de vérité (_reviews),
++    // elles ne peuvent donc jamais diverger de la liste.
++    public int ReviewCount => _reviews.Count;
++
++    public decimal? AverageRating =>
++        _reviews.Count == 0
++            ? null
++            : (decimal)_reviews.Sum(review => review.Rating.Value) / _reviews.Count;
++
++    public static Book CreateBook(string title, string author, Isbn isbn, PublicationYear publicationYear,
++        CoverUri? coverUrl = null)
++    {
++        ValidateTitleAndAuthor(title, author);
++        return new Book(title, author, isbn, publicationYear, coverUrl);
++    }
++
++    public void UpdateBookDetails(string newTitle, string newAuthor, Isbn newIsbn, PublicationYear newPublicationYear,
++        CoverUri? newCoverUrl = null)
++    {
++        ValidateTitleAndAuthor(newTitle, newAuthor);
++        Title = newTitle;
++        Author = newAuthor;
++        Isbn = newIsbn;
++        PublicationYear = newPublicationYear;
++        CoverUrl = newCoverUrl;
++    }
++
++    public Review AddReview(Guid userId, Rating rating, FinishedOn finishedOn, DateTime createdAt, DateTime updatedAt,
++        string? comment = null)
++    {
++        if (_reviews.Any(r => r.UserId == userId))
++        {
++            throw new DuplicateReviewException(userId, BookId);
++        }
++
++        Review review = Review.CreateReview(rating, comment, finishedOn, createdAt, updatedAt, userId, BookId);
++        _reviews.Add(review);
++        return review;
++    }
++
++    public void UpdateReview(Guid reviewId, Guid userId, Rating rating, FinishedOn finishedOn, DateTime updatedAt,
++        string? comment = null)
++    {
++        Review review = GetOwnedReviewOrThrow(reviewId, userId);
++        review.UpdateReview(rating, finishedOn, updatedAt, comment);
++    }
++
++    public void RemoveReview(Guid reviewId, Guid userId)
++    {
++        Review review = GetOwnedReviewOrThrow(reviewId, userId);
++        _reviews.Remove(review);
++    }
++
++    // Retrouve la critique et vérifie que l'utilisateur en est bien l'auteur.
++    private Review GetOwnedReviewOrThrow(Guid reviewId, Guid userId)
++    {
++        Review review = _reviews.SingleOrDefault(r => r.ReviewId == reviewId)
++                        ?? throw new ReviewNotFoundException(reviewId);
++
++        if (review.UserId != userId)
++        {
++            throw new ReviewOwnershipException(reviewId, userId);
++        }
++
++        return review;
++    }
++
++    private static void ValidateTitleAndAuthor(string title, string author)
++    {
++        if (string.IsNullOrWhiteSpace(title))
++        {
++            throw new BookArgumentException("Title is required");
++        }
++
++        if (string.IsNullOrWhiteSpace(author))
++        {
++            throw new BookArgumentException("Author is required");
++        }
++    }
++}
+diff --git a/src/BiblioNote.Core/Domain/Exceptions/ReviewOwnershipException.cs b/src/BiblioNote.Core/Domain/Exceptions/ReviewOwnershipException.cs
+new file mode 100644
+index 0000000..aec4a59
+--- /dev/null
++++ b/src/BiblioNote.Core/Domain/Exceptions/ReviewOwnershipException.cs
+@@ -0,0 +1,14 @@
++namespace BiblioNote.Core.Domain.Exceptions;
++
++public class ReviewOwnershipException : Exception
++{
++    public ReviewOwnershipException(Guid reviewId, Guid userId)
++        : base($"User {userId} is not the author of review {reviewId}")
++    {
++        ReviewId = reviewId;
++        UserId = userId;
+
++    }
++
++    public Guid ReviewId { get; }
++    public Guid UserId { get; }
++}

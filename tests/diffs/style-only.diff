@@ -1,0 +1,35 @@
+diff --git a/src/OrderService.cs b/src/OrderService.cs
+index 33d424e..9e506d1 100644
+--- a/src/OrderService.cs
++++ b/src/OrderService.cs
+@@ -16,19 +16,12 @@ public class OrderService
+         _notifier = notifier;
+     }
+ 
+-    public decimal ComputeTotal(Order order)
+-    {
+-        decimal total = 0;
+-        foreach (OrderLine line in order.Lines)
+-        {
+-            total += line.UnitPrice * line.Quantity;
+-        }
+-        return total;
+-    }
++    public decimal ComputeTotal(Order order) =>
++        order.Lines.Sum(line => line.UnitPrice * line.Quantity);
+ 
+     public async Task ConfirmAsync(int orderId)
+     {
+-        Order order = await _repository.GetAsync(orderId);
++        var order = await _repository.GetAsync(orderId);
+         order.Status = OrderStatus.Confirmed;
+         await _repository.SaveAsync(order);
+         await _notifier.SendConfirmationAsync(order);
+@@ -36,6 +29,6 @@ public class OrderService
+ 
+     public string FormatCustomerName(Customer customer)
+     {
+-        return customer.FirstName + " " + customer.LastName.ToUpper();
++        return $"{customer.FirstName} {customer.LastName.ToUpper()}";
+     }
+ }
